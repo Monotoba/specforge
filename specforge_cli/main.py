@@ -1116,7 +1116,8 @@ def template_cmd(
         template_file = template_dir / f"{kind}.md"
         if not template_file.exists():
             template_file.write_text(f"# {kind} template\n\n", encoding="utf-8")
-        import os, subprocess
+        import os
+        import subprocess
         editor = os.environ.get("VISUAL") or os.environ.get("EDITOR")
         if not editor:
             console.print("[red]No editor set. Export $VISUAL or $EDITOR.[/red]")
