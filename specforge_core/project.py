@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from .config import ProjectConfig, load_config
-from .idgen import ID_RE, next_id
+from .idgen import ID_RE
 from .markdown import read_artifact, write_artifact
 from .models import Artifact, ArtifactKind, ArtifactStatus
 from .plugins import fire_plugin_event
