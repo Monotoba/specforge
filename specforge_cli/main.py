@@ -1012,7 +1012,6 @@ def plugin_cmd(
             import importlib.util as _ilu
             spec = _ilu.spec_from_file_location(f"_check_{pyfile.stem}", pyfile)
             if spec and spec.loader:
-                import sys as _sys
                 mod = _ilu.module_from_spec(spec)
                 spec.loader.exec_module(mod)  # type: ignore[union-attr]
                 has_hook = "[green]yes[/green]" if hasattr(mod, "on_event") else "[yellow]no[/yellow]"
