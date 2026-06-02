@@ -751,8 +751,6 @@ def config_cmd(
     set_kv: Optional[str] = typer.Option(None, "--set", help="Set key=value (e.g. --set git_commit=true)"),
 ) -> None:
     """Show or update project configuration (.specforge.yaml)."""
-    import json as _json
-
     project = Project(path)
     write_default_config(project.root)  # create default if missing
     cfg = load_config(project.root)
@@ -897,9 +895,10 @@ def webhook_cmd(
     secret: Optional[str] = typer.Option(None, "--secret", help="Optional HMAC secret"),
 ) -> None:
     """Manage webhook subscriptions for artifact events."""
-    from specforge_core.webhooks import WebhookEntry
-    import urllib.request
     import json as _json
+    import urllib.request
+
+    from specforge_core.webhooks import WebhookEntry
 
     project = Project(path)
     write_default_config(project.root)
@@ -916,7 +915,7 @@ def webhook_cmd(
         if event:
             console.print(f"  events: {', '.join(event)}")
         if secret:
-            console.print(f"  secret: (set)")
+            console.print("  secret: (set)")
 
     elif action == "list":
         if not cfg.webhooks:
@@ -962,7 +961,8 @@ def webhook_cmd(
         body = _json.dumps(payload).encode("utf-8")
         headers = {"Content-Type": "application/json"}
         if entry.secret:
-            import hashlib, hmac
+            import hashlib
+            import hmac
             sig = hmac.new(entry.secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
             headers["X-SpecForge-Signature"] = f"sha256={sig}"
         try:
