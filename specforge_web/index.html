@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SpecForge</title>
+  <style>
+    /* ── CSS variables ───────────────────────────────────────────────────── */
+    :root {
+      --bg:        #f4f4f5;
+      --surface:   #ffffff;
+      --surface2:  #f0f0f2;
+      --border:    #e4e4e7;
+      --text:      #18181b;
+      --text-muted:#71717a;
+      --accent:    #4f46e5;
+      --accent-h:  #4338ca;
+      --accent-fg: #ffffff;
+      --err:       #dc2626;
+      --ok:        #16a34a;
+      --warn:      #d97706;
+      --radius:    6px;
+      --shadow:    0 1px 4px rgba(0,0,0,.08);
+    }
+
+    [data-theme="dark"],
+    [data-theme="system"] {
+      --bg:        #18181b;
+      --surface:   #242427;
+      --surface2:  #2e2e32;
+      --border:    #3f3f46;
+      --text:      #e4e4e7;
+      --text-muted:#a1a1aa;
+      --accent:    #818cf8;
+      --accent-h:  #a5b4fc;
+      --accent-fg: #1e1b4b;
+      --err:       #f87171;
+      --ok:        #4ade80;
+      --warn:      #fbbf24;
+      --shadow:    0 1px 4px rgba(0,0,0,.4);
+    }
+
+    @media (prefers-color-scheme: light) {
+      [data-theme="system"] {
+        --bg:        #f4f4f5;
+        --surface:   #ffffff;
+        --surface2:  #f0f0f2;
+        --border:    #e4e4e7;
+        --text:      #18181b;
+        --text-muted:#71717a;
+        --accent:    #4f46e5;
+        --accent-h:  #4338ca;
+        --accent-fg: #ffffff;
+        --err:       #dc2626;
+        --ok:        #16a34a;
+        --warn:      #d97706;
+        --shadow:    0 1px 4px rgba(0,0,0,.08);
+      }
+    }
+
+    /* ── Reset / base ────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 1rem;
+      transition: background .2s, color .2s;
+    }
+
+    a { color: var(--accent); }
+
+    /* ── App shell ───────────────────────────────────────────────────────── */
+    #app { max-width: 1140px; margin: 0 auto; }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      padding: .75rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -.01em;
+    }
+
+    header h1 span { color: var(--accent); }
+
+    #themeBar {
+      margin-left: auto;
+      display: flex;
+      gap: .25rem;
+    }
+
+    .theme-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      border-radius: var(--radius);
+      padding: .3rem .6rem;
+      cursor: pointer;
+      font-size: .8rem;
+      transition: background .15s, color .15s, border-color .15s;
+    }
+
+    .theme-btn:hover { background: var(--surface2); color: var(--text); }
+    .theme-btn.active {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent);
+    }
+
+    /* ── Cards ───────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: .75rem;
+      box-shadow: var(--shadow);
+    }
+
+    .card h2 {
+      margin: 0 0 .75rem;
+      font-size: .95rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: .4rem;
+    }
+
+    /* ── Form controls ───────────────────────────────────────────────────── */
+    input, select, textarea, button {
+      font: inherit;
+      font-size: 13px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      padding: .35rem .6rem;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 25%, transparent);
+    }
+
+    textarea { width: 100%; min-height: 6rem; resize: vertical; }
+
+    button {
+      background: var(--accent);
+      color: var(--accent-fg);
+      border-color: var(--accent);
+      cursor: pointer;
+      font-weight: 500;
+      white-space: nowrap;
+      transition: background .15s, opacity .15s;
+    }
+
+    button:hover { background: var(--accent-h); border-color: var(--accent-h); }
+    button:active { opacity: .85; }
+
+    button.secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    button.secondary:hover { background: var(--border); }
+
+    /* ── Layout helpers ──────────────────────────────────────────────────── */
+    .row { display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; margin-bottom: .4rem; }
+    .hint { color: var(--text-muted); font-size: .8rem; margin: .2rem 0 .5rem; }
+
+    /* ── Toolbar strip ───────────────────────────────────────────────────── */
+    .toolbar { display: flex; gap: .35rem; flex-wrap: wrap; }
+    .toolbar button { font-size: .8rem; padding: .28rem .65rem; }
+
+    /* ── Output box ──────────────────────────────────────────────────────── */
+    #output {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .75rem 1rem;
+      white-space: pre-wrap;
+      font-family: ui-monospace, monospace;
+      font-size: .8rem;
+      max-height: 380px;
+      overflow: auto;
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    /* ── Table ───────────────────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; margin-top: .25rem; }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px;
+    }
+
+    th {
+      background: var(--surface2);
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      font-size: .72rem;
+      border: 1px solid var(--border);
+      padding: .45rem .6rem;
+      text-align: left;
+    }
+
+    td {
+      border: 1px solid var(--border);
+      padding: .4rem .6rem;
+      vertical-align: middle;
+    }
+
+    tr.clickable { cursor: pointer; }
+    tr.clickable:hover td { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+
+    /* ── Status badges ───────────────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: .15rem .45rem;
+      border-radius: 99px;
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .03em;
+      white-space: nowrap;
+    }
+
+    .s-draft     { background: color-mix(in srgb,#71717a 15%,transparent); color: var(--text-muted); }
+    .s-proposed  { background: color-mix(in srgb,#d97706 18%,transparent); color: #d97706; }
+    .s-approved  { background: color-mix(in srgb,#2563eb 15%,transparent); color: #60a5fa; }
+    .s-implemented{ background: color-mix(in srgb,#7c3aed 15%,transparent); color: #a78bfa; }
+    .s-verified  { background: color-mix(in srgb,#16a34a 15%,transparent); color: #4ade80; }
+    .s-rejected  { background: color-mix(in srgb,#dc2626 15%,transparent); color: #f87171; }
+    .s-archived  { background: color-mix(in srgb,#52525b 15%,transparent); color: #71717a; }
+
+    /* ── Kind badges ─────────────────────────────────────────────────────── */
+    .k-idea        { background: color-mix(in srgb,#06b6d4 15%,transparent); color: #22d3ee; }
+    .k-candidate   { background: color-mix(in srgb,#0ea5e9 15%,transparent); color: #38bdf8; }
+    .k-requirement { background: color-mix(in srgb,#3b82f6 15%,transparent); color: #60a5fa; }
+    .k-decision    { background: color-mix(in srgb,#6366f1 15%,transparent); color: #818cf8; }
+    .k-assumption  { background: color-mix(in srgb,#8b5cf6 15%,transparent); color: #a78bfa; }
+    .k-constraint  { background: color-mix(in srgb,#ec4899 15%,transparent); color: #f472b6; }
+    .k-change_order{ background: color-mix(in srgb,#f59e0b 15%,transparent); color: #fbbf24; }
+    .k-task        { background: color-mix(in srgb,#f97316 15%,transparent); color: #fb923c; }
+    .k-test        { background: color-mix(in srgb,#84cc16 15%,transparent); color: #a3e635; }
+    .k-verification{ background: color-mix(in srgb,#10b981 15%,transparent); color: #34d399; }
+    .k-reference   { background: color-mix(in srgb,#64748b 15%,transparent); color: #94a3b8; }
+    .k-conversation{ background: color-mix(in srgb,#64748b 15%,transparent); color: #94a3b8; }
+
+    /* ── Gate indicator ──────────────────────────────────────────────────── */
+    .gate-pass { color: var(--ok); font-weight: 700; }
+    .gate-fail { color: var(--err); font-weight: 700; }
+
+    /* ── Two-column grid on wider screens ────────────────────────────────── */
+    @media (min-width: 768px) {
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    }
+
+    /* ── Help overlay ────────────────────────────────────────────────────── */
+    #helpOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(2px);
+    }
+    #helpOverlay.open { display: flex; align-items: flex-start; justify-content: flex-end; }
+
+    #helpPanel {
+      width: min(680px, 95vw);
+      height: 100vh;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      box-shadow: -4px 0 24px rgba(0,0,0,.25);
+    }
+
+    #helpHeader {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .7rem 1rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+      flex-shrink: 0;
+    }
+
+    #helpHeader h2 { margin: 0; font-size: .95rem; color: var(--accent); }
+
+    #helpTabs {
+      display: flex;
+      gap: .25rem;
+      margin-left: auto;
+    }
+
+    .htab {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: .75rem;
+      padding: .25rem .6rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+    }
+    .htab:hover { background: var(--surface); color: var(--text); }
+    .htab.active { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+
+    #helpClose {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: .2rem .4rem;
+      border-radius: var(--radius);
+      line-height: 1;
+      margin-left: auto;
+    }
+    #helpClose:hover { background: var(--surface); color: var(--err); }
+
+    #helpPanel {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #helpPanelBody {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    #helpNav {
+      width: 160px;
+      flex-shrink: 0;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: .5rem 0;
+      background: var(--surface2);
+    }
+
+    .hnav-group { margin-bottom: .5rem; }
+
+    .hnav-label {
+      display: block;
+      font-size: .65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      color: var(--text-muted);
+      padding: .3rem .75rem .15rem;
+    }
+
+    .htab {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: .8rem;
+      padding: .3rem .75rem;
+      border-radius: 0;
+      cursor: pointer;
+      border-left: 2px solid transparent;
+      transition: background .1s, color .1s;
+    }
+    .htab:hover { background: color-mix(in srgb,var(--accent) 8%,transparent); color: var(--text); }
+    .htab.active {
+      background: color-mix(in srgb,var(--accent) 12%,transparent);
+      color: var(--accent);
+      border-left-color: var(--accent);
+      font-weight: 600;
+    }
+
+    #helpBody {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.25rem 1.5rem;
+      font-size: .88rem;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    /* Rendered markdown styles inside help panel */
+    #helpBody h1 { font-size: 1.25rem; color: var(--accent); margin: 0 0 .75rem; border-bottom: 1px solid var(--border); padding-bottom: .4rem; }
+    #helpBody h2 { font-size: 1rem; font-weight: 700; margin: 1.4rem 0 .4rem; color: var(--text); }
+    #helpBody h3 { font-size: .9rem; font-weight: 600; margin: 1rem 0 .3rem; color: var(--text-muted); }
+    #helpBody p  { margin: .4rem 0 .75rem; }
+    #helpBody ul, #helpBody ol { margin: .3rem 0 .75rem 1.25rem; }
+    #helpBody li { margin: .2rem 0; }
+    #helpBody code {
+      font-family: ui-monospace, monospace;
+      font-size: .8rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: .1rem .3rem;
+    }
+    #helpBody pre {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: .75rem 1rem;
+      overflow-x: auto;
+      margin: .5rem 0 1rem;
+    }
+    #helpBody pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: .78rem;
+      line-height: 1.55;
+    }
+    #helpBody table { border-collapse: collapse; width: 100%; margin: .5rem 0 1rem; font-size: .82rem; }
+    #helpBody th { background: var(--surface2); border: 1px solid var(--border); padding: .3rem .6rem; text-align: left; font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); }
+    #helpBody td { border: 1px solid var(--border); padding: .3rem .6rem; }
+    #helpBody a  { color: var(--accent); }
+    #helpBody strong { font-weight: 600; }
+    #helpBody blockquote { border-left: 3px solid var(--accent); margin: .5rem 0; padding: .3rem .75rem; color: var(--text-muted); background: var(--surface2); border-radius: 0 var(--radius) var(--radius) 0; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- Header -->
+  <header>
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3" y="3" width="18" height="18" rx="3" fill="var(--accent)" opacity=".15"/>
+      <path d="M7 8h10M7 12h7M7 16h5" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <h1>Spec<span>Forge</span></h1>
+    <div id="themeBar">
+      <button class="theme-btn" data-t="light" onclick="setTheme('light')" title="Light mode">☀ Light</button>
+      <button class="theme-btn" data-t="system" onclick="setTheme('system')" title="System default">⊙ System</button>
+      <button class="theme-btn" data-t="dark" onclick="setTheme('dark')" title="Dark mode">☾ Dark</button>
+    </div>
+    <button class="theme-btn" onclick="openHelp('getting_started')" title="Help" style="margin-left:.5rem">? Help</button>
+  </header>
+
+  <!-- Help overlay -->
+  <div id="helpOverlay" onclick="closeHelpOnBackdrop(event)">
+    <div id="helpPanel">
+      <div id="helpHeader">
+        <h2>Help</h2>
+        <button id="helpClose" onclick="closeHelp()" title="Close">✕</button>
+      </div>
+      <div id="helpPanelBody">
+      <div id="helpNav">
+        <div class="hnav-group"><span class="hnav-label">Start</span>
+          <button class="htab active" data-topic="getting_started" onclick="loadHelp('getting_started')">Getting Started</button>
+          <button class="htab" data-topic="workflow"        onclick="loadHelp('workflow')">Workflow</button>
+          <button class="htab" data-topic="artifacts"       onclick="loadHelp('artifacts')">Artifacts</button>
+        </div>
+        <div class="hnav-group"><span class="hnav-label">Reference</span>
+          <button class="htab" data-topic="user_manual"     onclick="loadHelp('user_manual')">CLI Commands</button>
+          <button class="htab" data-topic="configuration"   onclick="loadHelp('configuration')">Configuration</button>
+          <button class="htab" data-topic="web_ui"          onclick="loadHelp('web_ui')">Web UI</button>
+          <button class="htab" data-topic="studio"          onclick="loadHelp('studio')">Desktop Studio</button>
+        </div>
+        <div class="hnav-group"><span class="hnav-label">Features</span>
+          <button class="htab" data-topic="ai_drafting"     onclick="loadHelp('ai_drafting')">AI Drafting</button>
+          <button class="htab" data-topic="webhooks"        onclick="loadHelp('webhooks')">Webhooks</button>
+          <button class="htab" data-topic="plugins"         onclick="loadHelp('plugins')">Plugins</button>
+          <button class="htab" data-topic="templates"       onclick="loadHelp('templates')">Templates</button>
+          <button class="htab" data-topic="mcp"             onclick="loadHelp('mcp')">MCP / Claude Code</button>
+        </div>
+        <div class="hnav-group"><span class="hnav-label">Support</span>
+          <button class="htab" data-topic="troubleshooting" onclick="loadHelp('troubleshooting')">Troubleshooting</button>
+        </div>
+      </div><!-- /helpNav -->
+      <div id="helpBody"><em>Loading…</em></div>
+      </div><!-- /helpPanelBody -->
+    </div>
+  </div>
+
+  <!-- Open project / toolbar -->
+  <div class="card">
+    <h2>Project</h2>
+    <div class="row">
+      <input id="projectPath" size="55" placeholder="/path/to/specforge/project" />
+      <button onclick="openProject()">Open</button>
+      <button class="secondary" onclick="refreshArtifacts()">Refresh</button>
+    </div>
+    <div class="toolbar">
+      <button class="secondary" onclick="rebuildTrace()">Rebuild Trace</button>
+      <button class="secondary" onclick="fetchContextPack()">Context Pack</button>
+      <button class="secondary" onclick="fetchReport()">Acceptance Report</button>
+      <button class="secondary" onclick="doStatus()">Status</button>
+      <button class="secondary" onclick="doExport()">Export Matrix</button>
+      <button class="secondary" onclick="doValidate()">Validate</button>
+      <button class="secondary" onclick="doGitLog()">Git Log</button>
+    </div>
+  </div>
+
+  <div class="grid2">
+
+    <!-- Create artifact -->
+    <div class="card">
+      <h2>Create Artifact</h2>
+      <div class="row">
+        <select id="kind">
+          <option value="idea">idea</option>
+          <option value="candidate">candidate</option>
+          <option value="requirement">requirement</option>
+          <option value="decision">decision</option>
+          <option value="assumption">assumption</option>
+          <option value="constraint">constraint</option>
+          <option value="change_order">change_order</option>
+          <option value="task">task</option>
+          <option value="test">test</option>
+          <option value="verification">verification</option>
+          <option value="reference">reference</option>
+        </select>
+        <select id="statusValue">
+          <option value="draft">draft</option>
+          <option value="proposed">proposed</option>
+          <option value="approved">approved</option>
+          <option value="implemented">implemented</option>
+          <option value="verified">verified</option>
+          <option value="rejected">rejected</option>
+          <option value="archived">archived</option>
+        </select>
+      </div>
+      <div class="row">
+        <input id="title" size="46" placeholder="Title" style="flex:1" />
+      </div>
+      <textarea id="body" placeholder="Artifact body (Markdown)"></textarea>
+      <div class="row">
+        <input id="createSource"     size="16" placeholder="source ID" />
+        <input id="createImplements" size="20" placeholder="implements (space-sep)" />
+        <input id="createReqs"       size="20" placeholder="related reqs (space-sep)" />
+      </div>
+      <div class="row">
+        <input id="createVerifiedBy" size="20" placeholder="verified-by (space-sep)" />
+        <input id="createDependsOn"  size="20" placeholder="depends-on (space-sep)" />
+      </div>
+      <button onclick="createArtifact()">Create Artifact</button>
+    </div>
+
+    <!-- Actions panel -->
+    <div>
+
+      <!-- Search -->
+      <div class="card">
+        <h2>Search</h2>
+        <div class="row">
+          <input id="searchQuery" placeholder="Keywords…" style="flex:1" />
+          <button onclick="doSearch()">Search</button>
+        </div>
+      </div>
+
+      <!-- Promote -->
+      <div class="card">
+        <h2>Promote Artifact</h2>
+        <p class="hint">Click a row in the table to fill the ID.</p>
+        <div class="row">
+          <input id="promoteId"    size="14" placeholder="Artifact ID" />
+          <span style="color:var(--text-muted)">→</span>
+          <select id="promoteKind">
+            <option value="candidate">candidate</option>
+            <option value="requirement">requirement</option>
+            <option value="decision">decision</option>
+            <option value="assumption">assumption</option>
+            <option value="constraint">constraint</option>
+            <option value="change_order">change_order</option>
+            <option value="task">task</option>
+            <option value="test">test</option>
+            <option value="verification">verification</option>
+          </select>
+          <input id="promoteTitle" placeholder="Override title" style="flex:1" />
+          <button onclick="promoteArtifact()">Promote</button>
+        </div>
+      </div>
+
+      <!-- Link -->
+      <div class="card">
+        <h2>Link Artifact</h2>
+        <div class="row">
+          <input id="linkId"         size="14" placeholder="Artifact ID" />
+          <input id="linkImplements" placeholder="implements" style="flex:1" />
+          <input id="linkReqs"       placeholder="related reqs" style="flex:1" />
+        </div>
+        <div class="row">
+          <input id="linkTests"      placeholder="verified-by" style="flex:1" />
+          <input id="linkTags"       placeholder="tags" style="flex:1" />
+          <button onclick="doLink()">Link</button>
+        </div>
+      </div>
+
+      <!-- Update status -->
+      <div class="card">
+        <h2>Update Status</h2>
+        <div class="row">
+          <input id="updateStatusId" size="16" placeholder="Artifact ID" />
+          <select id="updateStatusValue">
+            <option value="draft">draft</option>
+            <option value="proposed">proposed</option>
+            <option value="approved">approved</option>
+            <option value="implemented">implemented</option>
+            <option value="verified">verified</option>
+            <option value="rejected">rejected</option>
+            <option value="archived">archived</option>
+          </select>
+          <button onclick="updateStatus()">Update</button>
+        </div>
+      </div>
+
+    </div><!-- /actions column -->
+  </div><!-- /grid2 -->
+
+  <!-- Output -->
+  <div class="card">
+    <h2>Output</h2>
+    <div id="output">(results appear here)</div>
+  </div>
+
+  <!-- Artifacts table -->
+  <div class="card">
+    <h2>Artifacts</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Kind</th>
+            <th>Status</th>
+            <th>Title</th>
+            <th style="color:var(--text-muted);font-weight:400">Path</th>
+          </tr>
+        </thead>
+        <tbody id="artifactRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+/* ── Markdown renderer ──────────────────────────────────────────────────── */
+function renderMd(md) {
+  let h = md
+    // Escape HTML entities first
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    // Fenced code blocks
+    .replace(/```(\w*)\n([\s\S]*?)```/g, (_,lang,code)=>
+      `<pre><code class="lang-${lang}">${code.trimEnd()}</code></pre>`)
+    // Inline code
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    // Headers
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,  '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,   '<h1>$1</h1>')
+    // Bold
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    // Horizontal rule
+    .replace(/^---$/gm, '<hr/>')
+    // Blockquote
+    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+    // Tables — header row, divider, then data rows
+    .replace(/\|(.+)\|\n\|[-| :]+\|\n((?:\|.+\|\n?)+)/g, (_m, hdr, body) => {
+      const ths = hdr.split('|').slice(1,-1).map(c=>`<th>${c.trim()}</th>`).join('');
+      const trs = body.trim().split('\n').map(r => {
+        const tds = r.split('|').slice(1,-1).map(c=>`<td>${c.trim()}</td>`).join('');
+        return `<tr>${tds}</tr>`;
+      }).join('');
+      return `<table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+    })
+    // Unordered list (groups of - lines)
+    .replace(/((?:^- .+\n?)+)/gm, block => {
+      const items = block.trim().split('\n').map(l=>`<li>${l.slice(2)}</li>`).join('');
+      return `<ul>${items}</ul>`;
+    })
+    // Ordered list
+    .replace(/((?:^\d+\. .+\n?)+)/gm, block => {
+      const items = block.trim().split('\n').map(l=>`<li>${l.replace(/^\d+\. /,'')}</li>`).join('');
+      return `<ol>${items}</ol>`;
+    })
+    // Links
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+    // Paragraphs: blank-line separated text not already wrapped
+    .replace(/^(?!<[huptbol]|<hr)(.+)$/gm, '<p>$1</p>');
+
+  return h;
+}
+
+/* ── Help panel ──────────────────────────────────────────────────────────── */
+let _helpLoaded = {};
+
+async function loadHelp(topic) {
+  // Update tab highlight
+  document.querySelectorAll('.htab').forEach(b =>
+    b.classList.toggle('active', b.dataset.topic === topic));
+
+  if (_helpLoaded[topic]) {
+    document.getElementById('helpBody').innerHTML = _helpLoaded[topic];
+    return;
+  }
+
+  document.getElementById('helpBody').innerHTML = '<em>Loading…</em>';
+  try {
+    const r = await fetch(`/help/${topic}`);
+    if (!r.ok) throw new Error(await r.text());
+    const { markdown } = await r.json();
+    const html = renderMd(markdown);
+    _helpLoaded[topic] = html;
+    document.getElementById('helpBody').innerHTML = html;
+  } catch(e) {
+    document.getElementById('helpBody').innerHTML =
+      `<p style="color:var(--err)">Could not load help: ${e.message}</p>
+       <p>Make sure the SpecForge daemon is running.</p>`;
+  }
+}
+
+function openHelp(topic = 'getting_started') {
+  document.getElementById('helpOverlay').classList.add('open');
+  loadHelp(topic);
+}
+
+function closeHelp() {
+  document.getElementById('helpOverlay').classList.remove('open');
+}
+
+function closeHelpOnBackdrop(e) {
+  if (e.target === document.getElementById('helpOverlay')) closeHelp();
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHelp(); });
+
+/* ── Theme ─────────────────────────────────────────────────────────────── */
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('sf-theme', t);
+  document.querySelectorAll('.theme-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.t === t)
+  );
+}
+
+(function() {
+  const saved = localStorage.getItem('sf-theme') || 'system';
+  setTheme(saved);
+})();
+
+/* ── Helpers ────────────────────────────────────────────────────────────── */
+function setOutput(text) {
+  document.getElementById('output').textContent = text;
+}
+
+async function api(path, options = {}) {
+  const r = await fetch(path, options);
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function apiText(path) {
+  const r = await fetch(path);
+  if (!r.ok) throw new Error(await r.text());
+  return r.text();
+}
+
+function splitIds(val) { return val.trim() ? val.trim().split(/\s+/) : []; }
+
+function kindBadge(k)   { return `<span class="badge k-${k}">${k}</span>`; }
+function statusBadge(s) { return `<span class="badge s-${s}">${s}</span>`; }
+
+/* ── Project ────────────────────────────────────────────────────────────── */
+async function openProject() {
+  const path = document.getElementById('projectPath').value;
+  try {
+    const r = await api('/projects/open', {method:'POST',
+      headers:{'Content-Type':'application/json'}, body:JSON.stringify({path})});
+    setOutput(JSON.stringify(r, null, 2));
+    refreshArtifacts();
+  } catch(e) { setOutput('Error: ' + e.message); }
+}
+
+async function refreshArtifacts() {
+  try {
+    const rows = await api('/artifacts');
+    const tbody = document.getElementById('artifactRows');
+    tbody.innerHTML = '';
+    for (const item of rows) {
+      const tr = document.createElement('tr');
+      tr.className = 'clickable';
+      const pathShort = item.path ? item.path.split('/').slice(-2).join('/') : '';
+      tr.innerHTML =
+        `<td><code style="font-size:.75rem">${item.id}</code></td>` +
+        `<td>${kindBadge(item.kind)}</td>` +
+        `<td>${statusBadge(item.status)}</td>` +
+        `<td>${escHtml(item.title)}</td>` +
+        `<td style="color:var(--text-muted);font-size:.75rem">${pathShort}</td>`;
+      tr.onclick = () => {
+        document.getElementById('promoteId').value = item.id;
+        document.getElementById('updateStatusId').value = item.id;
+        document.getElementById('linkId').value = item.id;
+        setOutput(JSON.stringify(item, null, 2));
+      };
+      tbody.appendChild(tr);
+    }
+  } catch(e) { setOutput('Error: ' + e.message); }
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ── CRUD ───────────────────────────────────────────────────────────────── */
+async function createArtifact() {
+  const payload = {
+    kind:     document.getElementById('kind').value,
+    title:    document.getElementById('title').value,
+    status:   document.getElementById('statusValue').value,
+    body:     document.getElementById('body').value,
+    source:   document.getElementById('createSource').value.trim() || null,
+    depends_on:           splitIds(document.getElementById('createDependsOn').value),
+    implements:           splitIds(document.getElementById('createImplements').value),
+    related_requirements: splitIds(document.getElementById('createReqs').value),
+    references:           [],
+    verified_by:          splitIds(document.getElementById('createVerifiedBy').value),
+  };
+  try {
+    const r = await api('/artifacts', {method:'POST',
+      headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    setOutput(JSON.stringify(r, null, 2));
+    refreshArtifacts();
+  } catch(e) { setOutput('Error: ' + e.message); }
+}
+
+async function doLink() {
+  const id = document.getElementById('linkId').value.trim();
+  if (!id) { setOutput('Error: enter an artifact ID'); return; }
+  const payload = {
+    implements:           splitIds(document.getElementById('linkImplements').value),
+    related_requirements: splitIds(document.getElementById('linkReqs').value),
+    verified_by:          splitIds(document.getElementById('linkTests').value),
+    tags:                 splitIds(document.getElementById('linkTags').value),
+  };
+  try {
+    const r = await api(`/artifacts/${id}/link`, {method:'POST',
+      headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    setOutput(JSON.stringify(r, null, 2));
+    refreshArtifacts();
+  } catch(e) { setOutput('Error: ' + e.message); }
+}
+
+async function promoteArtifact() {
+  const id = document.getElementById('promoteId').value.trim();
+  if (!id) { setOutput('Error: enter an artifact ID to promote'); return; }
+  const payload = { target_kind: document.getElementById('promoteKind').value };
+  const ot = document.getElementById('promoteTitle').value.trim();
+  if (ot) payload.title = ot;
+  try {
+    const r = await api(`/artifacts/${id}/promote`, {method:'POST',
+      headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    setOutput(JSON.stringify(r, null, 2));
+    refreshArtifacts();
+  } catch(e) { setOutput('Error: ' + e.message); }
+}
+
+async function updateStatus() {
+  const id = document.getElementById('updateStatusId').value.trim();
+  if (!id) { setOutput('Error: enter an artifact ID'); return; }
+  const payload = { status: document.getElementById('updateStatusValue').value };
+  try {
+    const r = await api(`/artifacts/${id}/status`, {method:'PATCH',
+      headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)});
+    setOutput(JSON.stringify(r, null, 2));
+    refreshArtifacts();
+  } catch(e) { setOutput('Error: ' + e.message); }
+}
+
+/* ── Views ──────────────────────────────────────────────────────────────── */
+async function rebuildTrace() {
+  try {
+    const r = await api('/trace/rebuild', {method:'POST',
+      headers:{'Content-Type':'application/json'}, body:'{}'});
+    setOutput(JSON.stringify(r, null, 2));
+  } catch(e) { setOutput('Error: ' + e.message); }
+}
+
+async function fetchContextPack() {
+  try { setOutput(JSON.stringify(await api('/context-pack'), null, 2)); }
+  catch(e) { setOutput('Error: ' + e.message); }
+}
+
+async function fetchReport() {
+  try { setOutput(await apiText('/report')); }
+  catch(e) { setOutput('Error: ' + e.message); }
+}
+
+async function doSearch() {
+  const q = document.getElementById('searchQuery').value.trim();
+  if (!q) { setOutput('Enter a search query.'); return; }
+  try {
+    const rs = await api(`/search?q=${encodeURIComponent(q)}`);
+    if (!rs.length) { setOutput('No results.'); return; }
+    setOutput(rs.map(r =>
+      `${r.id}  [${r.kind}/${r.status}]  ${r.title}\n  ${r.snippet}`
+    ).join('\n\n'));
+  } catch(e) { setOutput('Error: ' + e.message); }
+}
+
+async function doStatus() {
+  try {
+    const s = await api('/status');
+    const gate = s.gate === 'PASS' ? '✅ PASS' : '❌ FAIL';
+    const counts = Object.entries(s.kind_counts).map(([k,n]) => `  ${k}: ${n}`).join('\n');
+    const unverified = s.unverified_requirements.length
+      ? s.unverified_requirements.map(r => `  ${r.id}: ${r.title}`).join('\n')
+      : '  (none)';
+    const open = s.open_tasks.length
+      ? s.open_tasks.map(t => `  ${t.id} [${t.status}]: ${t.title}`).join('\n')
+      : '  (none)';
+    setOutput(
+      `Release Gate: ${gate}\n\nArtifacts (${s.total_artifacts} total)\n${counts}` +
+      `\n\nUnverified requirements\n${unverified}\n\nOpen tasks\n${open}`
+    );
+  } catch(e) { setOutput('Error: ' + e.message); }
+}
+
+async function doExport() {
+  try {
+    const r = await api('/export');
+    setOutput('Exported:\n' + Object.entries(r).map(([k,v]) => `  ${k}: ${v}`).join('\n'));
+  } catch(e) { setOutput('Error: ' + e.message); }
+}
+
+async function doValidate() {
+  try {
+    const r = await api('/validate');
+    setOutput(r.ok ? 'Validation passed ✓' : 'Validation errors:\n' + r.errors.join('\n'));
+  } catch(e) { setOutput('Error: ' + e.message); }
+}
+
+async function doGitLog() {
+  try {
+    const es = await api('/git/log');
+    if (!es.length) { setOutput('No git history found.'); return; }
+    setOutput(es.map(e => `${e.sha}  ${e.date}  ${e.author}\n  ${e.message}`).join('\n\n'));
+  } catch(e) { setOutput('Error: ' + e.message); }
+}
+</script>
+</body>
+</html>

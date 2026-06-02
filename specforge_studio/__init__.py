@@ -1,0 +1,1 @@
+"""SpecForge Studio desktop client."""
