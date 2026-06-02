@@ -12,9 +12,9 @@ echo ""
 echo "1. Creating 'pypi' deployment environment..."
 gh api "repos/$REPO/environments/pypi" \
   --method PUT \
-  --field "wait_timer=0" \
-  --field "reviewers=[]" \
-  --field "deployment_branch_policy=null" \
+  --raw-field wait_timer=0 \
+  --raw-field reviewers='[]' \
+  --raw-field deployment_branch_policy=null \
   --silent
 echo "   ✓ pypi environment created"
 
