@@ -1,5 +1,10 @@
 # SpecForge
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![CI](https://github.com/Monotoba/specforge/workflows/CI/badge.svg)](https://github.com/Monotoba/specforge/actions/workflows/ci.yml)
+[![Release](https://github.com/Monotoba/specforge/workflows/Release/badge.svg)](https://github.com/Monotoba/specforge/actions/workflows/release.yml)
+[![CodeQL](https://github.com/Monotoba/specforge/workflows/CodeQL%20Security%20Scan/badge.svg)](https://github.com/Monotoba/specforge/actions/workflows/codeql.yml)
+
 **Local-first requirements engineering and specification management
 for software and hardware projects.**
 
