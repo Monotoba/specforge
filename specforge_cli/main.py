@@ -12,13 +12,13 @@ from rich.tree import Tree
 from specforge_core.adapter import handle_tool_call
 from specforge_core.config import ProjectConfig, load_config, save_config, write_default_config
 from specforge_core.contextpack import build_context_pack
-from specforge_core.status import project_status
 from specforge_core.export import ExportFormat, export_project
 from specforge_core.gitwrap import artifact_log
 from specforge_core.models import ArtifactKind, ArtifactStatus
 from specforge_core.project import Project
 from specforge_core.report import build_acceptance_report
 from specforge_core.search import search_artifacts
+from specforge_core.status import project_status
 from specforge_core.trace import TraceIndex
 from specforge_core.validation import validate_project
 
@@ -985,7 +985,7 @@ def plugin_cmd(
     action: str = typer.Argument(default="list", help="list (default)"),
 ) -> None:
     """Manage project plugins (.specforge/plugins/*.py)."""
-    from specforge_core.plugins import PLUGINS_DIR, load_plugins
+    from specforge_core.plugins import PLUGINS_DIR
 
     project = Project(path)
     plugin_dir = project.root / PLUGINS_DIR
