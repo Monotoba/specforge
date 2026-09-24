@@ -6,6 +6,7 @@ import threading
 
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
+from watchdog.observers.api import BaseObserver
 
 from specforge_core.idgen import ID_RE
 from specforge_core.project import Project
@@ -40,7 +41,7 @@ class _ArtifactHandler(FileSystemEventHandler):
 class ProjectWatcher:
     def __init__(self, project: Project) -> None:
         self._project = project
-        self._observer: Observer | None = None
+        self._observer: BaseObserver | None = None
 
     def start(self) -> None:
         if self._observer is not None:

@@ -53,6 +53,21 @@ class TestBulkFilter:
         matched = bulk_update(p, "archive", {"tag": ["nonexistent"]}, {}, dry_run=True)
         assert matched == []
 
+    @pytest.mark.parametrize(
+        ("filters", "message"),
+        [
+            ({"kind": "task"}, "kind"),
+            ({"status": ["draft"]}, "status"),
+            ({"tag": [1]}, "tag"),
+        ],
+    )
+    def test_rejects_invalid_filter_types(
+        self, tmp_path: Path, filters: dict[str, object], message: str
+    ) -> None:
+        p, _ = _setup_project(tmp_path)
+        with pytest.raises(ValueError, match=message):
+            bulk_update(p, "archive", filters, {}, dry_run=True)
+
 
 class TestBulkActions:
     def test_dry_run_does_not_write(self, tmp_path: Path) -> None:
@@ -95,6 +110,21 @@ class TestBulkActions:
         p, _ = _setup_project(tmp_path)
         with pytest.raises(ValueError, match="Unknown bulk action"):
             bulk_update(p, "fly", {}, {})
+
+    def test_update_status_requires_string_parameter(self, tmp_path: Path) -> None:
+        p, _ = _setup_project(tmp_path)
+        with pytest.raises(ValueError, match="to_status"):
+            bulk_update(
+                p,
+                "update-status",
+                {"kind": ["task"]},
+                {"to_status": ["implemented"]},
+            )
+
+    def test_tag_action_requires_string_list(self, tmp_path: Path) -> None:
+        p, _ = _setup_project(tmp_path)
+        with pytest.raises(ValueError, match="tags"):
+            bulk_update(p, "tag-add", {"kind": ["task"]}, {"tags": "v1"})
 
 
 class TestBulkCLI:

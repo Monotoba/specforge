@@ -17,7 +17,8 @@ def project_status(project: Project) -> dict[str, object]:
     # Per-kind, per-status breakdown (only non-zero)
     breakdown: dict[str, dict[str, int]] = {}
     for a in artifacts:
-        breakdown.setdefault(a.kind.value, Counter())[a.status.value] += 1  # type: ignore[index]
+        status_counts = breakdown.setdefault(a.kind.value, {})
+        status_counts[a.status.value] = status_counts.get(a.status.value, 0) + 1
 
     # Open tasks (not verified / not archived)
     open_tasks = [
