@@ -9,7 +9,7 @@ import json
 import os
 import urllib.error
 import urllib.request
-from typing import Callable
+from typing import Callable, cast
 
 from pydantic import BaseModel
 
@@ -100,17 +100,39 @@ def complete_with_fallback(
         raise
 
 
-def _post_json(url: str, payload: dict, headers: dict) -> dict:
+def _post_json(
+    url: str,
+    payload: dict[str, object],
+    headers: dict[str, str],
+) -> dict[str, object]:
     body = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(url, data=body, headers=headers, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=60) as resp:
-            return json.loads(resp.read().decode("utf-8"))
+            decoded: object = json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
         raise LLMError(f"HTTP {exc.code} from {url}: {detail}") from exc
     except Exception as exc:
         raise LLMError(f"Request to {url} failed: {exc}") from exc
+    if not isinstance(decoded, dict):
+        raise LLMError(f"Expected a JSON object from {url}, got {type(decoded).__name__}")
+    return cast(dict[str, object], decoded)
+
+
+def _response_text(data: dict[str, object], *path: str | int) -> str:
+    """Extract a text value from a nested provider response."""
+    value: object = data
+    for key in path:
+        if isinstance(key, str) and isinstance(value, dict):
+            value = value.get(key)
+        elif isinstance(key, int) and isinstance(value, list) and key < len(value):
+            value = value[key]
+        else:
+            raise KeyError(key)
+    if not isinstance(value, str):
+        raise KeyError(path[-1])
+    return value.strip()
 
 
 def _complete_anthropic(prompt: str, system: str, config: LLMConfig) -> str:
@@ -120,7 +142,7 @@ def _complete_anthropic(prompt: str, system: str, config: LLMConfig) -> str:
             "No API key for Anthropic. Set ANTHROPIC_API_KEY or 'llm.api_key' in .specforge.yaml."
         )
     url = config.effective_base_url().rstrip("/") + "/v1/messages"
-    payload = {
+    payload: dict[str, object] = {
         "model": config.effective_model(),
         "max_tokens": 1024,
         "system": system,
@@ -133,8 +155,8 @@ def _complete_anthropic(prompt: str, system: str, config: LLMConfig) -> str:
     }
     data = _post_json(url, payload, headers)
     try:
-        return data["content"][0]["text"].strip()
-    except (KeyError, IndexError) as exc:
+        return _response_text(data, "content", 0, "text")
+    except KeyError as exc:
         raise LLMError(f"Unexpected Anthropic response shape: {data}") from exc
 
 
@@ -145,7 +167,7 @@ def _complete_openai(prompt: str, system: str, config: LLMConfig) -> str:
             "No API key for OpenAI. Set OPENAI_API_KEY or 'llm.api_key' in .specforge.yaml."
         )
     url = config.effective_base_url().rstrip("/") + "/v1/chat/completions"
-    payload = {
+    payload: dict[str, object] = {
         "model": config.effective_model(),
         "messages": [
             {"role": "system", "content": system},
@@ -158,14 +180,14 @@ def _complete_openai(prompt: str, system: str, config: LLMConfig) -> str:
     }
     data = _post_json(url, payload, headers)
     try:
-        return data["choices"][0]["message"]["content"].strip()
-    except (KeyError, IndexError) as exc:
+        return _response_text(data, "choices", 0, "message", "content")
+    except KeyError as exc:
         raise LLMError(f"Unexpected OpenAI response shape: {data}") from exc
 
 
 def _complete_ollama(prompt: str, system: str, config: LLMConfig) -> str:
     url = config.effective_base_url().rstrip("/") + "/api/chat"
-    payload = {
+    payload: dict[str, object] = {
         "model": config.effective_model(),
         "stream": False,
         "messages": [
@@ -176,6 +198,6 @@ def _complete_ollama(prompt: str, system: str, config: LLMConfig) -> str:
     headers = {"Content-Type": "application/json"}
     data = _post_json(url, payload, headers)
     try:
-        return data["message"]["content"].strip()
-    except (KeyError, IndexError) as exc:
+        return _response_text(data, "message", "content")
+    except KeyError as exc:
         raise LLMError(f"Unexpected Ollama response shape: {data}") from exc

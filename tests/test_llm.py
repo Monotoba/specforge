@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 import json
-import os
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -62,7 +60,7 @@ class TestLLMConfig:
             complete("prompt", "system", cfg)
 
 
-def _make_urlopen_mock(response_body: dict):
+def _make_urlopen_mock(response_body: object):
     """Return a mock for urllib.request.urlopen that returns response_body as JSON."""
     mock_resp = MagicMock()
     mock_resp.read.return_value = json.dumps(response_body).encode("utf-8")
@@ -155,6 +153,20 @@ class TestCompleteOllama:
         req = mock_urlopen.call_args[0][0]
         payload = json.loads(req.data)
         assert payload["stream"] is False
+
+    @patch("specforge_core.llm.urllib.request.urlopen")
+    def test_rejects_non_object_response(self, mock_urlopen: MagicMock) -> None:
+        mock_urlopen.side_effect = _make_urlopen_mock(["not", "an", "object"])
+        with pytest.raises(LLMError, match="Expected a JSON object"):
+            complete("prompt", "system", LLMConfig(provider="ollama"))
+
+    @patch("specforge_core.llm.urllib.request.urlopen")
+    def test_rejects_non_text_content(self, mock_urlopen: MagicMock) -> None:
+        mock_urlopen.side_effect = _make_urlopen_mock(
+            {"message": {"content": {"unexpected": "object"}}}
+        )
+        with pytest.raises(LLMError, match="Unexpected Ollama response shape"):
+            complete("prompt", "system", LLMConfig(provider="ollama"))
 
 
 class TestCompleteWithFallback:

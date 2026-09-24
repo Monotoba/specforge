@@ -48,6 +48,7 @@ def test_create_artifact_with_git_commit(tmp_path):
     project.create_artifact(ArtifactKind.IDEA, "Git idea", "Body.", git_commit=True)
     entries = artifact_log(tmp_path)
     assert any("Git idea" in e["message"] for e in entries)
+    assert all(isinstance(value, str) for entry in entries for value in entry.values())
 
 
 def test_update_status_with_git_commit(tmp_path):

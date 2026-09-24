@@ -35,12 +35,17 @@ def artifact_log(root: Path, max_count: int = 50) -> list[dict[str, str]]:
     except ValueError:
         rel = "."
     commits = list(repo.iter_commits(paths=rel, max_count=max_count))
-    return [
-        {
-            "sha": c.hexsha[:8],
-            "date": c.committed_datetime.strftime("%Y-%m-%d %H:%M"),
-            "author": c.author.name,
-            "message": c.message.split("\n")[0].strip(),
-        }
-        for c in commits
-    ]
+    entries: list[dict[str, str]] = []
+    for commit in commits:
+        message = commit.message
+        if isinstance(message, bytes):
+            message = message.decode("utf-8", errors="replace")
+        entries.append(
+            {
+                "sha": commit.hexsha[:8],
+                "date": commit.committed_datetime.strftime("%Y-%m-%d %H:%M"),
+                "author": commit.author.name or "Unknown",
+                "message": message.splitlines()[0].strip() if message else "",
+            }
+        )
+    return entries
