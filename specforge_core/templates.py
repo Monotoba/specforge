@@ -65,7 +65,7 @@ _BUILTIN_TEMPLATES = {
 }
 
 
-def load_template(root: Path, kind: str) -> tuple[str, dict]:
+def load_template(root: Path, kind: str) -> tuple[str, dict[str, object]]:
     """Load template body and metadata for the given artifact kind.
 
     Returns (body, metadata) where metadata may include 'tags', 'status', etc.

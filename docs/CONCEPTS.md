@@ -320,7 +320,7 @@ the blank-page problem.
 
 **MCP (Model Context Protocol)** is a standard for connecting AI
 assistants to external tools. The `specforge mcp` command starts an
-MCP server that exposes 11 SpecForge tools to Claude Code.
+MCP server that exposes 15 SpecForge tools to Claude Code.
 
 With MCP configured, Claude Code can read and write project artifacts
 directly during a conversation. This closes the loop between

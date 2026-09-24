@@ -58,7 +58,7 @@ principles behind the design.
 | Plugins | Local Python hooks called synchronously on every mutation |
 | Templates | Per-kind Markdown starters with front-matter tag/status presets |
 | Bulk operations | Batch update-status, archive, tag-add/remove with filters and dry-run |
-| MCP server | 11 tools for Claude Code / MCP-compatible assistants |
+| MCP server | 15 tools for Claude Code / MCP-compatible assistants |
 | REST daemon | FastAPI local service for web UI and programmatic access |
 | Desktop app | PySide6 native client |
 | Web UI | Browser client with dark/light/system theme |
@@ -193,12 +193,14 @@ specforge mcp-config /path/to/project    # print config snippet
 ```
 
 Paste the printed `mcpServers` block into Claude Code `settings.json`.
-Claude can then call all 11 SpecForge tools directly in conversation:
+Claude can then call all 15 SpecForge tools directly in conversation:
 create artifacts, search, check status, promote, verify.
 
 Available MCP tools: `create_artifact`, `promote_artifact`,
 `update_status`, `get_artifact`, `list_artifacts`, `link_artifact`,
 `unlink_artifact`, `search`, `get_status`, `context_pack`, `validate`.
+Additional workflow tools: `check_gate`, `draft_artifact`, `bulk_update`,
+`list_templates`.
 
 ---
 
@@ -295,7 +297,7 @@ Built-in help system: start the daemon, open the web UI, and click
 ## Running tests
 
 ```bash
-pytest                    # 310 tests
+pytest                    # 320 tests
 pytest tests/test_llm.py  # specific module
 pytest -q                 # quiet mode
 ```
