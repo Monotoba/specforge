@@ -271,8 +271,8 @@ def add_conv(
     console.print(f"Created {artifact.id}: {artifact.title}")
 
 
-@app.command()
-def list(  # noqa: A001
+@app.command("list")
+def list_artifacts(
     path: Path,
     kind: Optional[ArtifactKind] = None,
     status: Optional[ArtifactStatus] = typer.Option(None, "--status", "-s"),
