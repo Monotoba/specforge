@@ -7,6 +7,8 @@
   plugins, artifact promotion links, and template tags.
 - Added Mypy to CI and expanded the test suite from 320 to 335 tests.
 - Refreshed project status and MCP documentation for the current 15-tool server.
+- Migrated the test client dependency from deprecated `httpx` compatibility to
+  `httpx2` and made Starlette deprecation warnings fail the test suite.
 
 ## 0.21.0
 
