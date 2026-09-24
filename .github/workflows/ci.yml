@@ -30,6 +30,9 @@ jobs:
       - name: Lint (ruff)
         run: ruff check specforge_core specforge_cli specforge_daemon
 
+      - name: Type check (mypy)
+        run: mypy specforge_core specforge_cli specforge_daemon
+
       - name: Run tests
         run: pytest --tb=short -q
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Completed strict Mypy coverage across all 27 source files.
+- Added defensive validation for LLM responses, bulk operations, MCP arguments,
+  plugins, artifact promotion links, and template tags.
+- Added Mypy to CI and expanded the test suite from 320 to 335 tests.
+- Refreshed project status and MCP documentation for the current 15-tool server.
+
 ## 0.21.0
 
 - MCP server expanded from 11 to 15 tools (version bumped to 0.20.0 in server info):

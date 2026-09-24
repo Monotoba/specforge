@@ -141,6 +141,29 @@ class TestTemplateCLI:
         assert len(tasks) == 1
         assert "v1.0" in tasks[0].tags
 
+    def test_template_new_ignores_scalar_tags(self, tmp_path: Path) -> None:
+        project = Project(tmp_path)
+        project.init()
+        template = project.root / ".specforge" / "templates" / "task.md"
+        template.write_text("---\ntags: v1.0\n---\n\nbody\n", encoding="utf-8")
+
+        result = runner.invoke(
+            app,
+            [
+                "template",
+                str(tmp_path),
+                "new",
+                "task",
+                "--title",
+                "My Task",
+                "--no-confirm",
+            ],
+        )
+
+        assert result.exit_code == 0, result.output
+        task = Project(tmp_path).get_artifact("TASK-0001")
+        assert task.tags == []
+
     def test_template_new_unknown_kind_exits_1(self, tmp_path: Path) -> None:
         result = runner.invoke(
             app,

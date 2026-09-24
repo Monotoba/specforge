@@ -18,8 +18,9 @@ distributed on PyPI as `specforge-tools`.
 
 ## Verification
 
-- 320 tests passing
+- 335 tests passing
 - Ruff checks passing
+- Mypy checks passing
 - Python package build passing
 - CI covers Python 3.11 and 3.12
 

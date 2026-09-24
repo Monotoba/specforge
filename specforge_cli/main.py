@@ -947,8 +947,8 @@ def webhook_cmd(
         if not url:
             console.print("[red]URL required for 'test'[/red]")
             raise typer.Exit(1)
-        entry = next((e for e in cfg.webhooks if e.url == url), None)
-        if not entry:
+        selected_entry = next((e for e in cfg.webhooks if e.url == url), None)
+        if selected_entry is None:
             console.print(f"[yellow]Webhook not found:[/yellow] {url}")
             raise typer.Exit(1)
         # Fire a synthetic ping event
@@ -960,10 +960,12 @@ def webhook_cmd(
         }
         body = _json.dumps(payload).encode("utf-8")
         headers = {"Content-Type": "application/json"}
-        if entry.secret:
+        if selected_entry.secret:
             import hashlib
             import hmac
-            sig = hmac.new(entry.secret.encode("utf-8"), body, hashlib.sha256).hexdigest()
+            sig = hmac.new(
+                selected_entry.secret.encode("utf-8"), body, hashlib.sha256
+            ).hexdigest()
             headers["X-SpecForge-Signature"] = f"sha256={sig}"
         try:
             request = urllib.request.Request(url, data=body, headers=headers, method="POST")
@@ -1013,7 +1015,7 @@ def plugin_cmd(
             spec = _ilu.spec_from_file_location(f"_check_{pyfile.stem}", pyfile)
             if spec and spec.loader:
                 mod = _ilu.module_from_spec(spec)
-                spec.loader.exec_module(mod)  # type: ignore[union-attr]
+                spec.loader.exec_module(mod)
                 has_hook = "[green]yes[/green]" if hasattr(mod, "on_event") else "[yellow]no[/yellow]"
             else:
                 has_hook = "[dim]?[/dim]"
@@ -1040,7 +1042,7 @@ def bulk_cmd(
 
     project = Project(path)
 
-    filters: dict = {}
+    filters: dict[str, object] = {}
     if kind:
         filters["kind"] = [*kind]
     if status:
@@ -1048,7 +1050,7 @@ def bulk_cmd(
     if tag:
         filters["tag"] = [*tag]
 
-    params: dict = {}
+    params: dict[str, object] = {}
     if to:
         params["to_status"] = to
     if add_tag:
@@ -1139,11 +1141,7 @@ def template_cmd(
             console.print(f"[yellow]No template for {kind!r}. Use 'specforge template {path} edit {kind}' to create one.[/yellow]")
             raise typer.Exit(1)
         artifact_title = title or f"New {kind}"
-        raw_tags = metadata.get("tags") or []
-        try:
-            template_tags = [str(t) for t in raw_tags]
-        except (TypeError, ValueError):
-            template_tags = []
+        template_tags = _template_tags(metadata)
         all_tags = (list(tag) if tag else []) + template_tags
         console.print(Panel(body, title=f"[bold]{artifact_title}[/bold] (from template)", border_style="cyan"))
         if not no_confirm:
@@ -1165,6 +1163,16 @@ def template_cmd(
 def _eg(project: Project, flag: bool) -> bool:
     """Return effective git_commit: True if the flag was passed OR config has git_commit=true."""
     return flag or project.config.git_commit
+
+
+def _template_tags(metadata: dict[str, object]) -> list[str]:
+    """Return template tags only when front matter contains a string array."""
+    raw_tags = metadata.get("tags")
+    if not isinstance(raw_tags, list) or not all(
+        isinstance(item, str) for item in raw_tags
+    ):
+        return []
+    return raw_tags
 
 
 def _git_init_project(root: Path) -> None:
