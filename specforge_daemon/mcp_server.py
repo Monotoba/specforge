@@ -226,6 +226,16 @@ def _text(content: object) -> dict[str, object]:
     return {"content": [{"type": "text", "text": json.dumps(content, default=str, indent=2)}]}
 
 
+def _string_list_arg(args: dict[str, object], name: str) -> list[str]:
+    """Return an optional MCP array argument after validating its item types."""
+    value = args.get(name)
+    if value is None:
+        return []
+    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+        raise ValueError(f"MCP argument {name!r} must be an array of strings")
+    return value
+
+
 def serve(project_path: str) -> None:
     project = Project(project_path)
     project.init()
@@ -253,9 +263,14 @@ def serve(project_path: str) -> None:
         elif method == "tools/list":
             response = _ok(req_id, {"tools": _TOOLS})
         elif method == "tools/call":
-            params = req.get("params", {})
-            tool_name = params.get("name", "")
-            args: dict[str, object] = dict(params.get("arguments", {}))
+            params_value = req.get("params", {})
+            params = params_value if isinstance(params_value, dict) else {}
+            tool_name_value = params.get("name", "")
+            tool_name = tool_name_value if isinstance(tool_name_value, str) else ""
+            arguments_value = params.get("arguments", {})
+            args: dict[str, object] = (
+                dict(arguments_value) if isinstance(arguments_value, dict) else {}
+            )
 
             if tool_name == "get_status":
                 from specforge_core.status import project_status
@@ -289,7 +304,7 @@ def serve(project_path: str) -> None:
                     kind_val = str(args.get("kind", "idea"))
                     prompt = str(args.get("prompt", ""))
                     title = str(args.get("title") or prompt[:60].rstrip())
-                    tags = list(args.get("tags") or [])
+                    tags = _string_list_arg(args, "tags")
                     git_commit = bool(args.get("git_commit", False))
                     artifact_kind = ArtifactKind(kind_val)
                     system = _DRAFT_SYSTEM + f"\n\nArtifact kind: {artifact_kind.value}"
@@ -321,17 +336,17 @@ def serve(project_path: str) -> None:
                 try:
                     action = str(args.get("action", "archive"))
                     filters: dict[str, object] = {}
-                    if args.get("kind"):
-                        filters["kind"] = list(args["kind"])  # type: ignore[arg-type]
+                    if kinds := _string_list_arg(args, "kind"):
+                        filters["kind"] = kinds
                     if args.get("status"):
                         filters["status"] = str(args["status"])
-                    if args.get("tag"):
-                        filters["tag"] = list(args["tag"])  # type: ignore[arg-type]
+                    if tags := _string_list_arg(args, "tag"):
+                        filters["tag"] = tags
                     op_params: dict[str, object] = {}
                     if args.get("to_status"):
                         op_params["to_status"] = str(args["to_status"])
-                    if args.get("tags_to_apply"):
-                        op_params["tags"] = list(args["tags_to_apply"])  # type: ignore[arg-type]
+                    if tags_to_apply := _string_list_arg(args, "tags_to_apply"):
+                        op_params["tags"] = tags_to_apply
                     dry_run = bool(args.get("dry_run", False))
                     affected = bulk_update(project, action, filters, op_params, dry_run=dry_run)
                     response = _ok(req_id, _text({

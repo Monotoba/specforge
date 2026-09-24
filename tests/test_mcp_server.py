@@ -5,7 +5,7 @@ import pytest
 
 from specforge_core.models import ArtifactKind, ArtifactStatus
 from specforge_core.project import Project
-from specforge_daemon.mcp_server import _TOOLS, _err, _ok, _text
+from specforge_daemon.mcp_server import _TOOLS, _err, _ok, _string_list_arg, _text
 
 
 def _call(project: Project, method: str, params: dict | None = None) -> dict:
@@ -58,6 +58,23 @@ def test_create_artifact_schema_has_required_fields():
     assert "kind" in tool["inputSchema"]["required"]
     assert "title" in tool["inputSchema"]["required"]
     assert "body" in tool["inputSchema"]["required"]
+
+
+def test_string_list_arg_accepts_string_array():
+    assert _string_list_arg({"tags": ["hardware", "mcp"]}, "tags") == [
+        "hardware",
+        "mcp",
+    ]
+
+
+def test_string_list_arg_returns_empty_for_omitted_argument():
+    assert _string_list_arg({}, "tags") == []
+
+
+@pytest.mark.parametrize("value", ["hardware", ["hardware", 3], {"hardware": True}])
+def test_string_list_arg_rejects_invalid_shapes(value):
+    with pytest.raises(ValueError, match="array of strings"):
+        _string_list_arg({"tags": value}, "tags")
 
 
 # ---------------------------------------------------------------------------
