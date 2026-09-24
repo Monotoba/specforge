@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from pathlib import Path
+from types import ModuleType
+from typing import Any
 
 from .config import ProjectConfig, load_config
 from .idgen import ID_RE
@@ -65,7 +67,7 @@ class Project:
         self._artifact_cache: list[Artifact] = []
         self._cache_snapshot: dict[Path, float] = {}
         self._config: ProjectConfig | None = None
-        self._plugin_cache: list | None = None
+        self._plugin_cache: list[ModuleType] | None = None
 
     @property
     def config(self) -> ProjectConfig:
@@ -127,16 +129,17 @@ class Project:
     ) -> Artifact:
         artifact_id = self._next_id(kind)
         now = datetime.now(timezone.utc)
-        artifact = Artifact(
-            id=artifact_id,
-            kind=kind,
-            title=title,
-            status=status,
-            created_at=now,
-            updated_at=now,
-            body=body,
-            **{k: v for k, v in links.items() if v is not None},
-        )
+        artifact_data: dict[str, object] = {
+            "id": artifact_id,
+            "kind": kind,
+            "title": title,
+            "status": status,
+            "created_at": now,
+            "updated_at": now,
+            "body": body,
+        }
+        artifact_data.update({key: value for key, value in links.items() if value is not None})
+        artifact = Artifact.model_validate(artifact_data)
         folder = self.root / DIR_BY_KIND[kind]
         filename = f"{artifact.id}-{slugify(title)}.md"
         artifact.path = folder / filename
@@ -271,7 +274,7 @@ class Project:
                 artifact.source = str(value)
             elif field in _list_fields:
                 current: list[str] = list(getattr(artifact, field, []))
-                new_vals: list[str] = [str(value)] if isinstance(value, str) else list(value)  # type: ignore[arg-type]
+                new_vals: list[str] = [value] if isinstance(value, str) else list(value)
                 for v in new_vals:
                     if v not in current:
                         current.append(v)
@@ -298,13 +301,14 @@ class Project:
     ) -> Artifact:
         source = self.get_artifact(artifact_id)
         default_status = _DEFAULT_STATUS_BY_KIND.get(target_kind, ArtifactStatus.DRAFT)
+        promoted_links: dict[str, Any] = dict(links)
+        promoted_links["source"] = source.id
         promoted = self.create_artifact(
             target_kind,
             title or source.title,
             body or source.body,
             status=default_status,
-            source=source.id,
-            **links,
+            **promoted_links,
         )
         if git_commit and promoted.path:
             from .gitwrap import commit_artifact

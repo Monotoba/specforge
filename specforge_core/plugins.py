@@ -50,7 +50,7 @@ def load_plugins(root: Path) -> list[ModuleType]:
                 continue
             mod = importlib.util.module_from_spec(spec)
             sys.modules[spec.name] = mod
-            spec.loader.exec_module(mod)  # type: ignore[union-attr]
+            spec.loader.exec_module(mod)
             modules.append(mod)
         except Exception as exc:
             print(f"Plugin {path.name} load error: {exc}", file=sys.stderr)
@@ -79,4 +79,5 @@ def fire_plugin_event(project: object, event: str, artifact: object) -> None:
         try:
             handler(event, artifact, project)
         except Exception as exc:
-            print(f"Plugin {mod.__spec__.origin} error: {exc}", file=sys.stderr)
+            origin = mod.__spec__.origin if mod.__spec__ is not None else mod.__name__
+            print(f"Plugin {origin} error: {exc}", file=sys.stderr)

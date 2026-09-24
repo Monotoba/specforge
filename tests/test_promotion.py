@@ -41,6 +41,18 @@ def test_promote_requirement_to_task(tmp_path):
     assert req.id in task.implements
 
 
+def test_promote_preserves_actual_source_when_source_link_is_supplied(tmp_path):
+    project = Project(tmp_path / "demo")
+    project.init()
+    idea = project.create_artifact(ArtifactKind.IDEA, "DXF export", "Explore DXF.")
+
+    candidate = project.promote_artifact(
+        idea.id, ArtifactKind.CANDIDATE, source="IDEA-9999"
+    )
+
+    assert candidate.source == idea.id
+
+
 def test_update_status(tmp_path):
     project = Project(tmp_path / "demo")
     project.init()

@@ -2,11 +2,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-
-import pytest
+from types import ModuleType
 
 from specforge_core.models import ArtifactKind, ArtifactStatus
-from specforge_core.plugins import load_plugins
+from specforge_core.plugins import fire_plugin_event, load_plugins
 from specforge_core.project import Project
 
 
@@ -118,6 +117,26 @@ class TestFirePluginEvent:
 
         # Same list object — not re-loaded
         assert cache1 is cache2
+
+    def test_exception_from_module_without_spec_reports_module_name(
+        self, tmp_path: Path, capsys
+    ) -> None:
+        project = Project(tmp_path)
+        project.init()
+        project._plugin_cache = []
+        artifact = project.create_artifact(ArtifactKind.IDEA, "Test", "body")
+
+        plugin = ModuleType("in_memory_plugin")
+
+        def fail_on_event(*_args: object) -> None:
+            raise RuntimeError("boom")
+
+        plugin.on_event = fail_on_event
+        project._plugin_cache = [plugin]
+
+        fire_plugin_event(project, "artifact.created", artifact)
+
+        assert "Plugin in_memory_plugin error: boom" in capsys.readouterr().err
 
 
 class TestPluginIntegration:
