@@ -10,6 +10,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 
+from specforge_core import __version__
 from specforge_core.adapter import handle_tool_call
 from specforge_core.config import load_config, save_config
 from specforge_core.contextpack import build_context_pack
@@ -36,7 +37,7 @@ async def lifespan(application: FastAPI) -> AsyncGenerator[None, None]:
         _watcher.stop()
 
 
-app = FastAPI(title="SpecForge Daemon", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="SpecForge Daemon", version=__version__, lifespan=lifespan)
 
 
 class OpenProjectRequest(BaseModel):

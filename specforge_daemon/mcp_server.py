@@ -15,6 +15,7 @@ import json
 import sys
 from typing import Any
 
+from specforge_core import __version__
 from specforge_core.adapter import handle_tool_call
 from specforge_core.project import Project
 
@@ -256,7 +257,7 @@ def serve(project_path: str) -> None:
             response = _ok(req_id, {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {"tools": {}},
-                "serverInfo": {"name": "specforge", "version": "0.20.0"},
+                "serverInfo": {"name": "specforge", "version": __version__},
             })
         elif method == "notifications/initialized":
             continue

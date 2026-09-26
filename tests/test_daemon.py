@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 
 import specforge_daemon.api as _api
 from specforge_daemon.api import app
+from specforge_core import __version__
 
 client = TestClient(app)
 
@@ -49,6 +50,11 @@ def req_id(proj):
 # ---------------------------------------------------------------------------
 # Health / static
 # ---------------------------------------------------------------------------
+
+def test_runtime_version_matches_release():
+    assert __version__ == "0.21.1"
+    assert app.version == __version__
+
 
 def test_root():
     resp = client.get("/")

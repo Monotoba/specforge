@@ -4,7 +4,7 @@ Updated: 2026-09-24
 
 ## Current release
 
-SpecForge 0.21.0 is a mature, local-first requirements engineering toolkit
+SpecForge 0.21.1 is a mature, local-first requirements engineering toolkit
 distributed on PyPI as `specforge-tools`.
 
 | Area | Status |
@@ -18,7 +18,7 @@ distributed on PyPI as `specforge-tools`.
 
 ## Verification
 
-- 335 tests passing
+- 336 tests passing
 - Ruff checks passing
 - Mypy checks passing
 - Python package build passing

@@ -297,7 +297,7 @@ Built-in help system: start the daemon, open the web UI, and click
 ## Running tests
 
 ```bash
-pytest                    # 335 tests
+pytest                    # 336 tests
 pytest tests/test_llm.py  # specific module
 pytest -q                 # quiet mode
 ```

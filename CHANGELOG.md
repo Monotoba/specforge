@@ -1,11 +1,13 @@
 # Changelog
 
-## Unreleased
+## 0.21.1
+
+Released: 2026-09-26
 
 - Completed strict Mypy coverage across all 27 source files.
 - Added defensive validation for LLM responses, bulk operations, MCP arguments,
   plugins, artifact promotion links, and template tags.
-- Added Mypy to CI and expanded the test suite from 320 to 335 tests.
+- Added Mypy to CI and expanded the test suite from 320 to 336 tests.
 - Refreshed project status and MCP documentation for the current 15-tool server.
 - Migrated the test client dependency from deprecated `httpx` compatibility to
   `httpx2` and made Starlette deprecation warnings fail the test suite.
